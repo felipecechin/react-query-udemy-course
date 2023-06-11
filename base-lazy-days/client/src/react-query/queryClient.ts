@@ -5,25 +5,32 @@ import { theme } from '../theme';
 
 const toast = createStandaloneToast({ theme });
 
-function queryErrorHandler(error: unknown): void {
-  // error is type unknown because in js, anything can be an error (e.g. throw(5))
-  const title =
-    error instanceof Error ? error.message : 'error connecting to server';
-
-  /// ////////////////////////////
-  // NOTE: no toast.closeAll() //
-  /// ////////////////////////////
-  toast.closeAll();
-  toast({ title, status: 'error', variant: 'subtle', isClosable: true });
+function queryErrorHandler(errorMessage: string): void {
+  toast({
+    title: errorMessage,
+    status: 'error',
+    variant: 'subtle',
+    isClosable: true,
+  });
 }
 
 export const queryClient = new QueryClient({
-  // queryCache: new QueryCache({
-  //   onError: queryErrorHandler,
-  // }),
+  queryCache: new QueryCache({
+    onError: (error, query) => {
+      let message: string;
+      if (query.meta?.errorMessage) {
+        message = query.meta.errorMessage as string;
+      } else if (error instanceof Error) {
+        message = error.message;
+      } else {
+        message = 'error connecting to server';
+      }
+
+      queryErrorHandler(message);
+    },
+  }),
   defaultOptions: {
     queries: {
-      onError: queryErrorHandler,
       staleTime: 600000, // 10 minutes
       cacheTime: 900000, // 15 minutes
       refetchOnMount: false,
