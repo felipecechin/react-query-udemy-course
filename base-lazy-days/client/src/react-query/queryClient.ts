@@ -1,5 +1,5 @@
 import { createStandaloneToast } from '@chakra-ui/react';
-import { QueryCache, QueryClient } from 'react-query';
+import { MutationCache, QueryCache, QueryClient } from 'react-query';
 
 import { theme } from '../theme';
 
@@ -27,6 +27,15 @@ export const queryClient = new QueryClient({
       }
 
       queryErrorHandler(message);
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      if (error instanceof Error) {
+        queryErrorHandler(error.message);
+      } else {
+        queryErrorHandler('error connecting to server');
+      }
     },
   }),
   defaultOptions: {
