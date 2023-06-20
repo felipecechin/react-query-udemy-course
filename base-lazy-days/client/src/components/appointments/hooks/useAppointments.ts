@@ -106,9 +106,6 @@ export function useAppointments(): UseAppointments {
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,
       refetchInterval: 60000,
-      meta: {
-        errorMessage: 'Ops, deu erro',
-      },
     },
   );
 

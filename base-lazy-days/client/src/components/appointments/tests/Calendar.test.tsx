@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { rest } from 'msw';
 import { renderWithQueryClient } from 'test-utils';
 
@@ -25,6 +25,11 @@ test('Reserve appointment error', async () => {
 
   renderWithQueryClient(<Calendar />);
 
-  const alertToast = await screen.findByRole('alert');
-  expect(alertToast).toHaveTextContent('Request failed with status code 500');
+  await waitFor(() => {
+    const alertToasts = screen.getAllByRole('alert');
+    expect(alertToasts).toHaveLength(4);
+    alertToasts.map((toast) =>
+      expect(toast).toHaveTextContent('Request failed with status code 500'),
+    );
+  });
 });
