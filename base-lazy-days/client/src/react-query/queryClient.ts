@@ -14,37 +14,41 @@ function queryErrorHandler(errorMessage: string): void {
   });
 }
 
-export const queryClient = new QueryClient({
-  queryCache: new QueryCache({
-    onError: (error, query) => {
-      let message: string;
-      if (query.meta?.errorMessage) {
-        message = query.meta.errorMessage as string;
-      } else if (error instanceof Error) {
-        message = error.message;
-      } else {
-        message = 'error connecting to server';
-      }
+export function generateQueryClient(): QueryClient {
+  return new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error, query) => {
+        let message: string;
+        if (query.meta?.errorMessage) {
+          message = query.meta.errorMessage as string;
+        } else if (error instanceof Error) {
+          message = error.message;
+        } else {
+          message = 'error connecting to server';
+        }
 
-      queryErrorHandler(message);
+        queryErrorHandler(message);
+      },
+    }),
+    mutationCache: new MutationCache({
+      onError: (error) => {
+        if (error instanceof Error) {
+          queryErrorHandler(error.message);
+        } else {
+          queryErrorHandler('error connecting to server');
+        }
+      },
+    }),
+    defaultOptions: {
+      queries: {
+        staleTime: 600000, // 10 minutes
+        cacheTime: 900000, // 15 minutes
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+      },
     },
-  }),
-  mutationCache: new MutationCache({
-    onError: (error) => {
-      if (error instanceof Error) {
-        queryErrorHandler(error.message);
-      } else {
-        queryErrorHandler('error connecting to server');
-      }
-    },
-  }),
-  defaultOptions: {
-    queries: {
-      staleTime: 600000, // 10 minutes
-      cacheTime: 900000, // 15 minutes
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-    },
-  },
-});
+  });
+}
+
+export const queryClient = generateQueryClient();
